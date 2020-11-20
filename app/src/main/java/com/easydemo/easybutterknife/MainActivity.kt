@@ -1,5 +1,6 @@
 package com.easydemo.easybutterknife
 
+import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
@@ -8,7 +9,7 @@ import com.easydemo.butterknife.ButterKnife
 import com.easydemo.butterknife_annotations.BindView
 import com.easydemo.butterknife_runtime.Unbinder
 
-class MainActivity : AppCompatActivity() {
+open class MainActivity : AppCompatActivity() {
     companion object {
         private const val TAG = "MainActivity"
     }
@@ -28,6 +29,9 @@ class MainActivity : AppCompatActivity() {
         super.onResume()
         unBinder = ButterKnife.bind(this)
         Log.d(TAG, "onCreate: " + (textView == null))
+        textView?.setOnClickListener {
+            startActivity(Intent(this, MainExtendActivity::class.java))
+        }
     }
 
     override fun onDestroy() {

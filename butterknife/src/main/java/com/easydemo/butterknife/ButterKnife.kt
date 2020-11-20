@@ -41,6 +41,8 @@ object ButterKnife {
             val bindingClassName = className + "Binding"
             val bindingClass = clazz.classLoader.loadClass(bindingClassName)
             bindingClass.getDeclaredConstructor(clazz) as Constructor<out Unbinder>
+        } catch(e: ClassNotFoundException) {
+            findBindingConstructorForClass(clazz.superclass)
         } catch(e: Exception) {
             e.printStackTrace()
             null
