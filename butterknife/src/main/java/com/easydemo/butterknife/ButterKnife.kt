@@ -2,6 +2,7 @@ package com.easydemo.butterknife
 
 import android.app.Activity
 import android.util.Log
+import android.view.View
 import com.easydemo.butterknife_runtime.Unbinder
 import java.lang.reflect.Constructor
 
@@ -19,9 +20,13 @@ object ButterKnife {
         this.debug = debug
     }
 
+    fun bind(target: Any, source: View): Unbinder {
+        val constructor = findBindingConstructorForClass(target.javaClass)
+        return constructor?.newInstance(target, source) ?: Unbinder.EMPTY
+    }
+
     fun bind(activity: Activity): Unbinder {
-        val constructor = findBindingConstructorForClass(activity.javaClass)
-        return constructor?.newInstance(activity) ?: Unbinder.EMPTY
+        return bind(activity, activity.window.decorView)
     }
 
     private fun findBindingConstructorForClass(clazz: Class<*>): Constructor<out Unbinder>? {
@@ -40,7 +45,7 @@ object ButterKnife {
         constructor = try {
             val bindingClassName = className + "Binding"
             val bindingClass = clazz.classLoader.loadClass(bindingClassName)
-            bindingClass.getDeclaredConstructor(clazz) as Constructor<out Unbinder>
+            bindingClass.getDeclaredConstructor(clazz, View::class.java) as Constructor<out Unbinder>
         } catch(e: ClassNotFoundException) {
             e.printStackTrace()
             if(debug) {

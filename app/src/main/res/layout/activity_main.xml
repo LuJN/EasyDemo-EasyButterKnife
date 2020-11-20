@@ -16,4 +16,10 @@
         app:layout_constraintRight_toRightOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
+    <fragment
+        android:id="@+id/fragment"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:name="com.easydemo.easybutterknife.MainFragment"/>
+
 </androidx.constraintlayout.widget.ConstraintLayout>

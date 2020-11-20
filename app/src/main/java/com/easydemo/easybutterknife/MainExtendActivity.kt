@@ -2,6 +2,7 @@ package com.easydemo.easybutterknife
 
 import android.util.Log
 import com.easydemo.butterknife.ButterKnife
+import com.easydemo.butterknife_runtime.Unbinder
 
 /**
  * @author lujunnan
@@ -13,9 +14,16 @@ class MainExtendActivity : MainActivity() {
         private const val TAG = "MainExtendActivity"
     }
 
+    private lateinit var unBinder: Unbinder
+
     override fun onResume() {
         super.onResume()
-        ButterKnife.bind(this)
+        unBinder = ButterKnife.bind(this)
         Log.d(TAG, "onResume: " + (textView == null))
+    }
+
+    override fun onDestroy() {
+        unBinder.unbind()
+        super.onDestroy()
     }
 }

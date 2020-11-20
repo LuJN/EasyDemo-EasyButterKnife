@@ -1,8 +1,10 @@
 package com.easydemo.butterknife_compiler
 
 import com.easydemo.butterknife_annotations.BindView
-import com.squareup.javapoet.*
-import java.lang.Exception
+import com.squareup.javapoet.ClassName
+import com.squareup.javapoet.JavaFile
+import com.squareup.javapoet.MethodSpec
+import com.squareup.javapoet.TypeSpec
 import java.util.*
 import javax.annotation.processing.*
 import javax.lang.model.SourceVersion
@@ -16,16 +18,19 @@ class ButterKnifeProcessor : AbstractProcessor() {
     private lateinit var filer: Filer
     private lateinit var messager: Messager
     private val UNBINDER = ClassName.get("com.easydemo.butterknife_runtime", "Unbinder")
+    // 因为是java module，所以引用Android View需要手动ClassName.get
+    private val VIEW = ClassName.get("android.view", "View")
+
 
     override fun init(p0: ProcessingEnvironment?) {
         super.init(p0)
         filer = p0!!.filer
         messager = p0.messager
-        messager.printMessage(Diagnostic.Kind.WARNING, "==========>init")
+        messager.printMessage(Diagnostic.Kind.WARNING, "==========>init\n")
     }
 
     override fun process(p0: MutableSet<out TypeElement>?, p1: RoundEnvironment?): Boolean {
-        messager.printMessage(Diagnostic.Kind.WARNING, "===========>process")
+        messager.printMessage(Diagnostic.Kind.WARNING, "===========>process\n")
         // 遍历所有的class文件
         p1!!.rootElements.forEach { rootElement ->
             // enclosingElement 如果是类，则返回包名
@@ -39,11 +44,19 @@ class ButterKnifeProcessor : AbstractProcessor() {
                 .addModifiers(Modifier.PUBLIC)
                 .addModifiers(Modifier.FINAL)
                 .addSuperinterface(UNBINDER)
-                .addField(className, "activity", Modifier.PRIVATE)
+                .addField(className, "target", Modifier.PRIVATE)
+                .addField(VIEW, "source", Modifier.PRIVATE)
             // 构造方法
             val constructSpecBuilder = MethodSpec.constructorBuilder()
                 .addModifiers(Modifier.PUBLIC)
-                .addParameter(className, "activity")
+                .addParameter(className, "target")
+                .addParameter(VIEW, "source")
+                .addStatement("this.target = target")
+                .addStatement("this.source = source")
+            // Unbind
+            val unbindMethodSpecBuilder = MethodSpec.methodBuilder("unbind")
+                .addAnnotation(Override::class.java)
+                .addModifiers(Modifier.PUBLIC)
             var hasBinding = false
             // 遍历所有成员变量、方法等成员
             rootElement.enclosedElements.forEach { element ->
@@ -51,21 +64,20 @@ class ButterKnifeProcessor : AbstractProcessor() {
                 if(bindViewAnnotation != null) {
                     hasBinding = true
                     // element.simpleName 返回变量名称 textView
-                    constructSpecBuilder.addStatement("this.activity = activity")
-                    constructSpecBuilder.addStatement("activity.\$N = activity.findViewById(\$L)", element.simpleName,bindViewAnnotation.value)
+                    // 在构造方法中声明
+                    constructSpecBuilder.addStatement("target.\$N = source.findViewById(\$L)", element.simpleName, bindViewAnnotation.value)
+                    unbindMethodSpecBuilder.addStatement("target.\$N = null", element.simpleName)
                 }
             }
-            // Unbind
-            val unbindMethodSpecBuilder = MethodSpec.methodBuilder("unbind")
-                .addAnnotation(Override::class.java)
-                .addModifiers(Modifier.PUBLIC)
-                .addStatement("this.activity = null")
+            unbindMethodSpecBuilder
+                .addStatement("this.target = null")
+                .addStatement("this.source = null")
+            val typeSpec = typeSpecBuilder
+                .addMethod(constructSpecBuilder.build())
+                .addMethod(unbindMethodSpecBuilder.build())
+                .build()
             if(hasBinding) {
                 try {
-                    val typeSpec = typeSpecBuilder
-                        .addMethod(constructSpecBuilder.build())
-                        .addMethod(unbindMethodSpecBuilder.build())
-                        .build()
                     JavaFile.builder(packageStr, typeSpec).build().writeTo(filer)
                 } catch(e: Exception) {
                     e.printStackTrace()

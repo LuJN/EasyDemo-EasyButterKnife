@@ -18,7 +18,7 @@ open class MainActivity : AppCompatActivity() {
     @JvmField
     var textView: TextView? = null
 
-    private var unBinder: Unbinder? = null
+    private lateinit var unBinder: Unbinder
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -35,7 +35,7 @@ open class MainActivity : AppCompatActivity() {
     }
 
     override fun onDestroy() {
-        unBinder?.unbind()
+        unBinder.unbind()
         val bindingClass = classLoader.loadClass("com.easydemo.easybutterknife.MainActivityBinding")
         val activityField = bindingClass.getDeclaredField("activity")
         activityField.isAccessible = true
