@@ -7,4 +7,8 @@ package com.easydemo.butterknife_runtime
  */
 interface Unbinder {
     fun unbind()
+
+    object EMPTY : Unbinder {
+        override fun unbind() {}
+    }
 }
