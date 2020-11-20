@@ -1,10 +1,7 @@
 package com.easydemo.butterknife_compiler
 
 import com.easydemo.butterknife_annotations.BindView
-import com.squareup.javapoet.ClassName
-import com.squareup.javapoet.JavaFile
-import com.squareup.javapoet.MethodSpec
-import com.squareup.javapoet.TypeSpec
+import com.squareup.javapoet.*
 import java.lang.Exception
 import java.util.*
 import javax.annotation.processing.*
@@ -18,6 +15,7 @@ import javax.tools.Diagnostic
 class ButterKnifeProcessor : AbstractProcessor() {
     private lateinit var filer: Filer
     private lateinit var messager: Messager
+    private val UNBINDER = ClassName.get("com.easydemo.butterknife_runtime", "Unbinder")
 
     override fun init(p0: ProcessingEnvironment?) {
         super.init(p0)
@@ -36,8 +34,14 @@ class ButterKnifeProcessor : AbstractProcessor() {
             val classStr = rootElement.simpleName.toString()
             val className = ClassName.get(packageStr, classStr)
             val bindingClassName = ClassName.get(packageStr, classStr + "Binding")
-            val typeSpecBuilder = TypeSpec.classBuilder(bindingClassName).addModifiers(Modifier.PUBLIC)
-            val constructSpec = MethodSpec.constructorBuilder()
+            // 类
+            val typeSpecBuilder = TypeSpec.classBuilder(bindingClassName)
+                .addModifiers(Modifier.PUBLIC)
+                .addModifiers(Modifier.FINAL)
+                .addSuperinterface(UNBINDER)
+                .addField(className, "activity", Modifier.PRIVATE)
+            // 构造方法
+            val constructSpecBuilder = MethodSpec.constructorBuilder()
                 .addModifiers(Modifier.PUBLIC)
                 .addParameter(className, "activity")
             var hasBinding = false
@@ -47,12 +51,21 @@ class ButterKnifeProcessor : AbstractProcessor() {
                 if(bindViewAnnotation != null) {
                     hasBinding = true
                     // element.simpleName 返回变量名称 textView
-                    constructSpec.addStatement("activity.\$N = activity.findViewById(\$L)", element.simpleName,bindViewAnnotation.value)
+                    constructSpecBuilder.addStatement("this.activity = activity")
+                    constructSpecBuilder.addStatement("activity.\$N = activity.findViewById(\$L)", element.simpleName,bindViewAnnotation.value)
                 }
             }
+            // Unbind
+            val unbindMethodSpecBuilder = MethodSpec.methodBuilder("unbind")
+                .addAnnotation(Override::class.java)
+                .addModifiers(Modifier.PUBLIC)
+                .addStatement("this.activity = null")
             if(hasBinding) {
                 try {
-                    val typeSpec = typeSpecBuilder.addMethod(constructSpec.build()).build()
+                    val typeSpec = typeSpecBuilder
+                        .addMethod(constructSpecBuilder.build())
+                        .addMethod(unbindMethodSpecBuilder.build())
+                        .build()
                     JavaFile.builder(packageStr, typeSpec).build().writeTo(filer)
                 } catch(e: Exception) {
                     e.printStackTrace()
