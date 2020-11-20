@@ -11,7 +11,9 @@ class ButterKnife {
     companion object {
         fun bind(activity: Activity) {
             try {
-                val bindingClass = Class.forName(activity.javaClass.canonicalName + "Binding")
+                // Class.forName会初始化静态块、静态变量，而ClassLoader.loadClass不会
+//                val bindingClass = Class.forName(activity.javaClass.canonicalName + "Binding")
+                val bindingClass = activity.classLoader.loadClass(activity.javaClass.canonicalName + "Binding")
                 val constructor  = bindingClass.getDeclaredConstructor(activity.javaClass)
                 constructor.newInstance(activity)
             } catch(e: Exception) {
