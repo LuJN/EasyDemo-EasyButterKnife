@@ -6,9 +6,11 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
+import android.widget.Toast
 import androidx.fragment.app.Fragment
 import com.easydemo.butterknife.ButterKnife
 import com.easydemo.butterknife_annotations.BindView
+import com.easydemo.butterknife_annotations.OnClick
 import com.easydemo.butterknife_runtime.Unbinder
 
 /**
@@ -26,6 +28,13 @@ class MainFragment : Fragment() {
     @BindView(R.id.textView)
     @JvmField
     var textView: TextView? = null
+
+    @OnClick(R.id.textView)
+    fun onClick() {
+        val toast = Toast.makeText(this.activity, "", Toast.LENGTH_SHORT)
+        toast.setText("@OnClick")
+        toast.show()
+    }
 
     override fun onCreateView(
         inflater: LayoutInflater,

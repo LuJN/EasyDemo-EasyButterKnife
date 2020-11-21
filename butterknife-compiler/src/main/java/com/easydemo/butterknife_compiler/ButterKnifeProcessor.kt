@@ -1,6 +1,7 @@
 package com.easydemo.butterknife_compiler
 
 import com.easydemo.butterknife_annotations.BindView
+import com.easydemo.butterknife_annotations.OnClick
 import com.squareup.javapoet.ClassName
 import com.squareup.javapoet.JavaFile
 import com.squareup.javapoet.MethodSpec
@@ -8,6 +9,7 @@ import com.squareup.javapoet.TypeSpec
 import java.util.*
 import javax.annotation.processing.*
 import javax.lang.model.SourceVersion
+import javax.lang.model.element.ExecutableElement
 import javax.lang.model.element.Modifier
 import javax.lang.model.element.TypeElement
 import javax.tools.Diagnostic
@@ -20,7 +22,7 @@ class ButterKnifeProcessor : AbstractProcessor() {
     private val UNBINDER = ClassName.get("com.easydemo.butterknife_runtime", "Unbinder")
     // 因为是java module，所以引用Android View需要手动ClassName.get
     private val VIEW = ClassName.get("android.view", "View")
-
+    private val ON_CLICK_LISTENER = ClassName.get("android.view.View", "OnClickListener")
 
     override fun init(p0: ProcessingEnvironment?) {
         super.init(p0)
@@ -49,8 +51,8 @@ class ButterKnifeProcessor : AbstractProcessor() {
             // 构造方法
             val constructSpecBuilder = MethodSpec.constructorBuilder()
                 .addModifiers(Modifier.PUBLIC)
-                .addParameter(className, "target")
-                .addParameter(VIEW, "source")
+                .addParameter(className, "target", Modifier.FINAL)
+                .addParameter(VIEW, "source", Modifier.FINAL)
                 .addStatement("this.target = target")
                 .addStatement("this.source = source")
             // Unbind
@@ -60,6 +62,7 @@ class ButterKnifeProcessor : AbstractProcessor() {
             var hasBinding = false
             // 遍历所有成员变量、方法等成员
             rootElement.enclosedElements.forEach { element ->
+                // @BindView
                 val bindViewAnnotation = element.getAnnotation(BindView::class.java)
                 if(bindViewAnnotation != null) {
                     hasBinding = true
@@ -67,6 +70,33 @@ class ButterKnifeProcessor : AbstractProcessor() {
                     // 在构造方法中声明
                     constructSpecBuilder.addStatement("target.\$N = source.findViewById(\$L)", element.simpleName, bindViewAnnotation.value)
                     unbindMethodSpecBuilder.addStatement("target.\$N = null", element.simpleName)
+                }
+                // @OnClick
+                val onClickAnnotation = element.getAnnotation(OnClick::class.java)
+                if(onClickAnnotation != null) {
+                    hasBinding = true
+                    val executableElement = element as ExecutableElement
+                    // 注解Ids
+                    val viewIds = onClickAnnotation.values
+                    // 方法名称
+                    val functionName = executableElement.simpleName.toString()
+                    constructSpecBuilder.addStatement("\$T view", VIEW)
+                    viewIds.forEach {id ->
+                        // 根据Ids发现View
+                        constructSpecBuilder.addStatement("view = source.findViewById(\$L)", id)
+                        constructSpecBuilder.beginControlFlow("if(view != null)")
+                        // 创建匿名内部类
+                        val onClickBuilder = MethodSpec.methodBuilder("onClick")
+                            .addAnnotation(Override::class.java)
+                            .addModifiers(Modifier.PUBLIC)
+                            .addParameter(VIEW, "v")
+                            .addStatement("target.\$L()", functionName)
+                        val callbackBuilder = TypeSpec.anonymousClassBuilder("")
+                            .superclass(ON_CLICK_LISTENER)
+                            .addMethod(onClickBuilder.build())
+                        constructSpecBuilder.addStatement("view.setOnClickListener(\$L)", callbackBuilder.build())
+                        constructSpecBuilder.endControlFlow()
+                    }
                 }
             }
             unbindMethodSpecBuilder
