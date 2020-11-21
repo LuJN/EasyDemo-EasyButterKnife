@@ -2,6 +2,7 @@ package com.easydemo.easybutterknife
 
 import android.os.Bundle
 import android.util.Log
+import android.view.View
 import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
@@ -21,12 +22,21 @@ open class MainActivity : AppCompatActivity() {
 
     private lateinit var unBinder: Unbinder
 
+//    @OnClick(R.id.textView, R.id.textView2)
+//    fun onClick() {
+//        // 小米手机Toast带应用名，e.g. "EasyDemo-EasyButterKnife:@OnClick"
+//        // 解决方法：需要先makeText传""，再setText
+//        val toast = Toast.makeText(this, "", Toast.LENGTH_SHORT)
+//        toast.setText("@OnClick")
+//        toast.show()
+//    }
+
     @OnClick(R.id.textView, R.id.textView2)
-    fun onClick() {
+    fun onClick(view: View) {
         // 小米手机Toast带应用名，e.g. "EasyDemo-EasyButterKnife:@OnClick"
         // 解决方法：需要先makeText传""，再setText
         val toast = Toast.makeText(this, "", Toast.LENGTH_SHORT)
-        toast.setText("@OnClick")
+        toast.setText("@OnClick${view.id}")
         toast.show()
     }
 

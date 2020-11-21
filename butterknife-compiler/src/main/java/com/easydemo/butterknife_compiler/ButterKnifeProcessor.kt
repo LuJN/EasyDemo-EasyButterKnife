@@ -12,6 +12,9 @@ import javax.lang.model.SourceVersion
 import javax.lang.model.element.ExecutableElement
 import javax.lang.model.element.Modifier
 import javax.lang.model.element.TypeElement
+import javax.lang.model.type.DeclaredType
+import javax.lang.model.type.TypeKind
+import javax.lang.model.type.TypeMirror
 import javax.tools.Diagnostic
 
 // @AutoService不起效
@@ -23,6 +26,7 @@ class ButterKnifeProcessor : AbstractProcessor() {
     // 因为是java module，所以引用Android View需要手动ClassName.get
     private val VIEW = ClassName.get("android.view", "View")
     private val ON_CLICK_LISTENER = ClassName.get("android.view.View", "OnClickListener")
+    private val VIEW_TYPE = "android.view.View"
 
     override fun init(p0: ProcessingEnvironment?) {
         super.init(p0)
@@ -80,6 +84,15 @@ class ButterKnifeProcessor : AbstractProcessor() {
                     val viewIds = onClickAnnotation.values
                     // 方法名称
                     val functionName = executableElement.simpleName.toString()
+                    // 被注解的方法参数，必须满足没有参数或者只有View参数
+                    val parameters = executableElement.parameters
+                    // 较检
+                    if(parameters.size > 1) {
+                        messager.printMessage(Diagnostic.Kind.ERROR, "@OnClick方法参数大于1")
+                    }
+                    if(parameters.size == 1 && !isSubtypeOfType(parameters[0].asType(), VIEW_TYPE)) {
+                        messager.printMessage(Diagnostic.Kind.ERROR, "@OnClick方法参数不是View")
+                    }
                     constructSpecBuilder.addStatement("\$T view", VIEW)
                     viewIds.forEach {id ->
                         // 根据Ids发现View
@@ -90,7 +103,11 @@ class ButterKnifeProcessor : AbstractProcessor() {
                             .addAnnotation(Override::class.java)
                             .addModifiers(Modifier.PUBLIC)
                             .addParameter(VIEW, "v")
-                            .addStatement("target.\$L()", functionName)
+                        if(parameters.size <= 0) {
+                            onClickBuilder.addStatement("target.\$L()", functionName)
+                        } else {
+                            onClickBuilder.addStatement("target.\$L(v)", functionName)
+                        }
                         val callbackBuilder = TypeSpec.anonymousClassBuilder("")
                             .superclass(ON_CLICK_LISTENER)
                             .addMethod(onClickBuilder.build())
@@ -123,5 +140,49 @@ class ButterKnifeProcessor : AbstractProcessor() {
 
     override fun getSupportedSourceVersion(): SourceVersion {
         return SourceVersion.latestSupported()
+    }
+
+    // 从ButterKnife源码拷贝的
+    fun isSubtypeOfType(typeMirror: TypeMirror, otherType: String): Boolean {
+        if (isTypeEqual(typeMirror, otherType)) {
+            return true
+        }
+        if (typeMirror.kind != TypeKind.DECLARED) {
+            return false
+        }
+        val declaredType = typeMirror as DeclaredType
+        val typeArguments = declaredType.typeArguments
+        if (typeArguments.size > 0) {
+            val typeString =
+                StringBuilder(declaredType.asElement().toString())
+            typeString.append('<')
+            for (i in typeArguments.indices) {
+                if (i > 0) {
+                    typeString.append(',')
+                }
+                typeString.append('?')
+            }
+            typeString.append('>')
+            if (typeString.toString() == otherType) {
+                return true
+            }
+        }
+        val element = declaredType.asElement() as? TypeElement ?: return false
+        val typeElement = element
+        val superType = typeElement.superclass
+        if (isSubtypeOfType(superType, otherType)) {
+            return true
+        }
+        for (interfaceType in typeElement.interfaces) {
+            if (isSubtypeOfType(interfaceType, otherType)) {
+                return true
+            }
+        }
+        return false
+    }
+
+    // 从ButterKnife源码拷贝的
+    private fun isTypeEqual(typeMirror: TypeMirror, otherType: String): Boolean {
+        return otherType == typeMirror.toString()
     }
 }
