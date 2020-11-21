@@ -1,5 +1,6 @@
 package com.easydemo.easybutterknife
 
+import android.content.Intent
 import android.os.Bundle
 import android.util.Log
 import android.view.LayoutInflater
@@ -31,9 +32,11 @@ class MainFragment : Fragment() {
 
     @OnClick(R.id.textView, R.id.textView2)
     fun onClick() {
-        val toast = Toast.makeText(this.activity, "", Toast.LENGTH_SHORT)
-        toast.setText("@OnClick")
-        toast.show()
+//        val toast = Toast.makeText(this.activity, "", Toast.LENGTH_SHORT)
+//        toast.setText("@OnClick")
+//        toast.show()
+
+        startActivity(Intent(activity, MainExtendActivity::class.java))
     }
 
     override fun onCreateView(
