@@ -1,11 +1,10 @@
 package com.easydemo.easybutterknife
 
-import android.content.Intent
-import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
 import android.widget.TextView
 import android.widget.Toast
+import androidx.appcompat.app.AppCompatActivity
 import com.easydemo.butterknife.ButterKnife
 import com.easydemo.butterknife_annotations.BindView
 import com.easydemo.butterknife_annotations.OnClick
@@ -22,7 +21,7 @@ open class MainActivity : AppCompatActivity() {
 
     private lateinit var unBinder: Unbinder
 
-    @OnClick(R.id.textView)
+    @OnClick(R.id.textView, R.id.textView2)
     fun onClick() {
         // 小米手机Toast带应用名，e.g. "EasyDemo-EasyButterKnife:@OnClick"
         // 解决方法：需要先makeText传""，再setText

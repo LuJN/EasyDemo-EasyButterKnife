@@ -29,7 +29,7 @@ class MainFragment : Fragment() {
     @JvmField
     var textView: TextView? = null
 
-    @OnClick(R.id.textView)
+    @OnClick(R.id.textView, R.id.textView2)
     fun onClick() {
         val toast = Toast.makeText(this.activity, "", Toast.LENGTH_SHORT)
         toast.setText("@OnClick")
