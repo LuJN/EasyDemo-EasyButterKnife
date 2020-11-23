@@ -1,0 +1,7 @@
+android {
+    flavorDimensions "dependWay"
+    productFlavors {
+        local {}// 本地
+        remote {}// 远程
+    }
+}
