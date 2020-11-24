@@ -1,7 +1,7 @@
 apply plugin: 'com.android.library'
 apply plugin: 'kotlin-android'
 apply plugin: 'kotlin-android-extensions'
-apply from: rootProject.file('gradle/gradle-maven-publish.gradle')
+apply from: rootProject.file('gradle/gradle-maven-publish-flavor.gradle')
 apply from: rootProject.file('flavor.gradle')
 
 android {

@@ -1,0 +1,48 @@
+apply plugin: 'maven'
+
+//task androidJavadocs(type: Javadoc) {
+//    source = android.sourceSets.main.java.srcDirs
+//    classpath += project.files(android.getBootClasspath().join(File.pathSeparator))
+//}
+//
+//task androidJavadocsJar(type: Jar, dependsOn: androidJavadocs) {
+//    classifier = 'javadoc'
+//    from androidJavadocs.destinationDir
+//}
+//
+//task androidSourcesJar(type: Jar) {
+//    classifier = 'sources'
+//    from android.sourceSets.main.java.srcDirs
+//}
+//
+//artifacts {
+//    archives androidSourcesJar
+//    archives androidJavadocsJar
+//}
+
+// archives指定为具体的aar文件，则pom是没有追踪依赖的
+artifacts {
+    archives file("./build/outputs/aar/butterknife-remote-release.aar")
+}
+
+uploadArchives {
+    repositories {
+        mavenDeployer {
+            // 这里仓库地址可改成自己需要的
+            repository(url: URL_MAVEN_REPO_RELEASE) {
+                // 这里的用户名和密码需要写在local.properties
+                authentication(userName: NEXUS_USERNAME, password: NEXUS_PASSWORD)
+            }
+            snapshotRepository(url: URL_MAVEN_REPO_SNAPSHOT) {
+                // 这里的用户名和密码需要写在local.properties
+                authentication(userName: NEXUS_USERNAME, password: NEXUS_PASSWORD)
+            }
+
+            pom {
+                groupId = COMPONENT_GROUP_ID
+                artifactId = project.name
+                version = COMPONENT_VERSION
+            }
+        }
+    }
+}
