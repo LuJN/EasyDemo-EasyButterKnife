@@ -6,10 +6,10 @@ buildscript {
         jcenter()
         // Nexus私服
         maven {
-            url "http://192.168.120.137:8081/repository/EasyDemo-Release/"
+            url URL_MAVEN_REPO_SNAPSHOT
         }
         maven {
-            url "http://192.168.120.137:8081/repository/EasyDemo-Snapshot/"
+            url URL_MAVEN_REPO_RELEASE
         }
     }
     dependencies {
@@ -19,6 +19,14 @@ buildscript {
         // NOTE: Do not place your application dependencies here; they belong
         // in the individual module build.gradle files
     }
+
+    // 依赖无需配置changing = true,配置的效果和-SNAPSHOT效果是一样的，配置-SNAPSHOT的依赖就是ChangingModule
+    configurations.all {
+        //每隔0s检查远程依赖是否存在更新
+        resolutionStrategy.cacheChangingModulesFor 0, 'seconds'
+        // 采用动态版本声明的依赖缓存0s
+        resolutionStrategy.cacheDynamicVersionsFor 0, 'seconds'
+    }
 }
 
 allprojects {
@@ -27,10 +35,10 @@ allprojects {
         jcenter()
         // Nexus私服
         maven {
-            url "http://192.168.120.137:8081/repository/EasyDemo-Release/"
+            url URL_MAVEN_REPO_SNAPSHOT
         }
         maven {
-            url "http://192.168.120.137:8081/repository/EasyDemo-Snapshot/"
+            url URL_MAVEN_REPO_RELEASE
         }
     }
 

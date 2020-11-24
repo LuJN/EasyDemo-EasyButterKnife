@@ -2,7 +2,7 @@ apply plugin: 'com.android.application'
 apply plugin: 'kotlin-android'
 apply plugin: 'kotlin-android-extensions'
 apply plugin: 'kotlin-kapt'
-//apply from: rootProject.file('flavor.gradle')
+apply from: rootProject.file('flavor.gradle')
 
 android {
     compileSdkVersion 30
@@ -35,9 +35,9 @@ dependencies {
     testImplementation 'junit:junit:4.12'
     androidTestImplementation 'androidx.test.ext:junit:1.1.2'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.3.0'
-//    localImplementation project(':butterknife')
-    implementation "com.easydemo.easybutterknife:butterknife:1.0.0-SNAPSHOT"
+    localImplementation project(':butterknife')
+    remoteImplementation "${COMPONENT_GROUP_ID}:butterknife:${COMPONENT_VERSION}"
     // kapt要把多渠道配置放在后面，如kaptLocal，而不是localKapt
-//    kaptLocal project(':butterknife-compiler')
-    kapt "com.easydemo.easybutterknife:butterknife-compiler:1.0.0-SNAPSHOT"
+    kaptLocal project(':butterknife-compiler')
+    kaptRemote "${COMPONENT_GROUP_ID}:butterknife-compiler:${COMPONENT_VERSION}"
 }

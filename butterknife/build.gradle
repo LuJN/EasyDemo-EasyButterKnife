@@ -2,7 +2,7 @@ apply plugin: 'com.android.library'
 apply plugin: 'kotlin-android'
 apply plugin: 'kotlin-android-extensions'
 apply from: rootProject.file('gradle/gradle-maven-publish.gradle')
-//apply from: rootProject.file('flavor.gradle')
+apply from: rootProject.file('flavor.gradle')
 
 android {
     compileSdkVersion 30
@@ -34,8 +34,8 @@ dependencies {
     testImplementation 'junit:junit:4.12'
     androidTestImplementation 'androidx.test.ext:junit:1.1.2'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.3.0'
-//    localApi project(':butterknife-annotations')
-    api "com.easydemo.easybutterknife:butterknife-annotations:1.0.0-SNAPSHOT"
-//    localApi project(':butterknife-runtime')
-    api "com.easydemo.easybutterknife:butterknife-runtime:1.0.0-SNAPSHOT"
+    localApi project(':butterknife-annotations')
+    remoteApi "${COMPONENT_GROUP_ID}:butterknife-annotations:${COMPONENT_VERSION}"
+    localApi project(':butterknife-runtime')
+    remoteApi "${COMPONENT_GROUP_ID}:butterknife-runtime:${COMPONENT_VERSION}"
 }

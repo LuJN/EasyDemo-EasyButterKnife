@@ -24,26 +24,19 @@ uploadArchives {
     repositories {
         mavenDeployer {
             // 这里仓库地址可改成自己需要的
-            repository(url: "http://192.168.120.137:8081/repository/EasyDemo-Release/") {
+            repository(url: URL_MAVEN_REPO_RELEASE) {
                 // 这里的用户名和密码需要写在local.properties
-                authentication(userName: "admin", password: "admin123")
+                authentication(userName: NEXUS_USERNAME, password: NEXUS_PASSWORD)
             }
-            snapshotRepository(url: "http://192.168.120.137:8081/repository/EasyDemo-Snapshot/") {
+            snapshotRepository(url: URL_MAVEN_REPO_SNAPSHOT) {
                 // 这里的用户名和密码需要写在local.properties
-                authentication(userName: "admin", password: "admin123")
+                authentication(userName: NEXUS_USERNAME, password: NEXUS_PASSWORD)
             }
 
-            pom.groupId = 'com.easydemo.easybutterknife'
-            pom.artifactId = project.name
-            pom.version = '1.0.0-SNAPSHOT'
-
-            pom.project {
-                licenses {
-                    license {
-                        name 'The Apache Software License, Version 2.0'
-                        url 'http://www.apache.org/licenses/LICENSE-2.0.txt'
-                    }
-                }
+            pom {
+                groupId = COMPONENT_GROUP_ID
+                artifactId = project.name
+                version = COMPONENT_VERSION
             }
         }
     }
