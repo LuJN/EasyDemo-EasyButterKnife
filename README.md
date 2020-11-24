@@ -6,3 +6,5 @@
 - $L 是字面量替换, 比如 ("abc$L123", "FOO") => abcFOO123. 也就是直接替换.
 - $S 是字符串替换, 比如: ("$S.length()", "foo") => "foo".length() 注意 $S 是将参数替换为了一个带双引号的字符串. 免去了手写 "\"foo\".length()" 中转义 (\") 的麻烦.
 - $N 是名称替换, 比如你之前定义了一个函数 MethodSpec methodSpec = MethodSpec.methodBuilder("foo").build(); 现在你可以通过 $N 获取这个函数的名称 ("$N", methodSpec) => foo.
+
+- 在gradle.properties中定义的变量在gradle中直接被引用，如果需要在java文件中被引用，可以定义BuildConfig变量引用，然后在java中引用BuildConfig变量
